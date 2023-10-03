@@ -9,7 +9,7 @@ from googlesheets import SPREADSHEET_ID
 
 
 
-class Parser(Connect):
+class Scrapper(Connect):
     """Base class for the scrapping data from the flashscorekz.com"""
 
     def __init__(self):
