@@ -1,4 +1,7 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (ReplyKeyboardMarkup,
+                           KeyboardButton,
+                           InlineKeyboardMarkup,
+                           InlineKeyboardButton)
 
 
 main_kb = ReplyKeyboardMarkup(
@@ -7,5 +10,12 @@ main_kb = ReplyKeyboardMarkup(
         [KeyboardButton('📋Заполнить таблицу'), KeyboardButton('🧹Очистить таблицу')],
         [KeyboardButton('🏀🏐Утвердить матчи'), KeyboardButton('🏁Закончить турнир')],
         [KeyboardButton('🆘Помощь')]
+    ]
+)
+
+confirm_finish_ikb = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton('Подтвердить завершение', callback_data='confirm_finish')],
+        [InlineKeyboardButton('Не завершать', callback_data='not_confirm')]
     ]
 )
