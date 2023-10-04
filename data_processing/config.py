@@ -29,7 +29,7 @@ def send_msg(msg_text: str,
             timeout=5,
             verify=False,
             data={
-                'chat_id':  int(chat_id),
+                'chat_id': int(chat_id),
                 'text': msg_text,
             }
         )

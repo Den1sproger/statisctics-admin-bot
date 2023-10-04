@@ -8,7 +8,7 @@ from gspread.exceptions import APIError
 from gspread.worksheet import Worksheet
 from ..config import Connect, FILEPATH_JSON
 from database import SPORT_TYPES
-from googlesheets import SPREADSHEET_ID
+from googlesheets import SPREADSHEET_ID, GAMES_SPREADSHEET_URL
 
 
 
@@ -25,6 +25,7 @@ class Games(Connect):
         'poole': 'G'
     }
     SHEET_NAME = 'Матчи'
+    URL = GAMES_SPREADSHEET_URL
 
 
     def __init__(self,
