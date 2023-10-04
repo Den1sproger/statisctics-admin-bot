@@ -4,11 +4,10 @@ from .db_config import SPORT_TYPES
 
 
 PROMPT_VIEW_GAMES = "SELECT game_key, sport, begin_time, first_team, first_coeff, second_team," \
-                    f"second_coeff, draw_coeff, url FROM games WHERE game_status=1;"
+                    f"second_coeff, draw_coeff, url FROM games;"
 PROMPT_DELETE_GAMES = "TRUNCATE games;"
 PROMPT_DELETE_ANSWERS = "TRUNCATE answers;"
 PROMPT_RESET_CURRENT_STATISTICS = "UPDATE currents_users_roi SET positive_bets=0, negative_bets=0, roi=0;"
-
 
 
 def get_prompt_add_game(game_key: str,
