@@ -8,8 +8,9 @@ from datetime import datetime, timedelta, timezone
 from database import (Database,
                       SPORT_TYPES,
                       get_prompt_add_game,
-                      get_prompt_view_games_id)
+                      PROMPT_VIEW_GAMES)
 from .base import Scrapper
+from ..sheets_work.games import Games
 from ..config import FILEPATH_JSON
 
 
@@ -40,7 +41,7 @@ class Collection(Scrapper):
         self.session = requests.Session()
         self.full_data = {}
 
-        ws_games = self.spreadsheet.worksheet()
+        ws_games = self.spreadsheet.worksheet(Games.SHEET_NAME)
 
         # email and password to flashscorekz.com
         if get_full_data:
@@ -234,7 +235,7 @@ class Collection(Scrapper):
     def write_to_database(self):
         # write the full data to the database        
         db = Database()
-        games = db.get_data_list(get_prompt_view_games_id())
+        games = db.get_data_list(PROMPT_VIEW_GAMES)
         if not games:
             data = self.get_games_from_json()
 
