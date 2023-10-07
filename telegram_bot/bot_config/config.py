@@ -24,6 +24,7 @@ async def set_default_commands(dp: Dispatcher) -> None:
             BotCommand('fill_table', 'Заполнить таблицу'),
             BotCommand('clear_table', 'Очистить таблицу'),
             BotCommand('approve_games', 'Утвердить матчи'),
+            BotCommand('remember_poole', 'Запомнить пул'),
             BotCommand('finish', 'Закончить турнир')
         ]
     )
