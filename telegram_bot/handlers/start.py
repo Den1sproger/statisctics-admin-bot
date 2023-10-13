@@ -17,6 +17,7 @@ HELP_TEXT = """
 /fill_table - заполнить таблицу
 /clear_table - очистить таблицу
 /approve_games - утвердить матчи
+/calculate - рассчитать результаты
 /finish - Закончить турнир
 """
 

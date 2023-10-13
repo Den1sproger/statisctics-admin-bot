@@ -9,7 +9,8 @@ main_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton('📋Заполнить таблицу'), KeyboardButton('🧹Очистить таблицу')],
         [KeyboardButton('🏀🏐Утвердить матчи'), KeyboardButton('📊Запомнить пул')],
-        [KeyboardButton('🏁Закончить турнир'), KeyboardButton('🆘Помощь')]
+        [KeyboardButton('🧮Рассчитать результаты'), KeyboardButton('🏁Закончить турнир')],
+        [KeyboardButton('🆘Помощь')]
     ]
 )
 
