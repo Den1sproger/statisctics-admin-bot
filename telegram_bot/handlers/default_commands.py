@@ -95,6 +95,21 @@ async def approve_games(message: types.Message) -> None:
 
 
 
+@dp.message_handler(Text(equals='📊Запомнить пул'), user_id=ADMIN)
+@dp.message_handler(Command('remember_poole'), user_id=ADMIN)
+async def remember_poole(message: types.Message) -> None:
+    try:
+        gs = Games()
+        gs.recorde_poole()
+    except Exception as _ex:
+        logging.error(_ex)
+        await message.answer("❌❌Ошибка❌❌")
+        return
+
+    await message.answer('Пул обновлен')
+
+
+
 @dp.message_handler(Text(equals='🏁Закончить турнир'), user_id=ADMIN)
 @dp.message_handler(Command('finish'), user_id=ADMIN)
 async def finish(message: types.Message) -> None:

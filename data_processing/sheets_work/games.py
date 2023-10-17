@@ -7,7 +7,9 @@ import logging
 from gspread.exceptions import APIError
 from gspread.worksheet import Worksheet
 from ..config import Connect, FILEPATH_JSON
-from database import SPORT_TYPES
+from database import (Database,
+                      SPORT_TYPES,
+                      get_prompt_recorde_poole)
 from googlesheets import SPREADSHEET_ID, GAMES_SPREADSHEET_URL
 
 
@@ -204,6 +206,73 @@ class Games(Connect):
 
         with open(FILEPATH_JSON, 'w', encoding='utf-8') as file:
             json.dump(games, file, indent=4, ensure_ascii=False)
+
+
+    def recorde_poole(self):
+        # approve the games in table of the games 
+        
+        with open(FILEPATH_JSON, 'r', encoding='utf-8') as file:
+            games = json.load(file)
+        games_data = list(games.values())
+
+        getting_data = []
+        count = 1
+        for game in games_data:
+            length = len(game['coeffs'])
+            getting_data.append(
+                f'{self.CELLS_COLS["url"]}{count + 1}:{self.CELLS_COLS["poole"]}{count + length}'
+            )
+            count += length
+        
+        gs_data = self.worksheet.batch_get(getting_data)
+        print(gs_data)
+
+        db = Database()
+        prompts = []
+
+        for game in gs_data:
+            length = len(game)
+
+            if length <= 1: continue
+
+            game_key = game[0][0].replace('https://www.flashscorekz.com/match/', '').replace('/#/match-summary', '')
+
+            poole_first = int(game[0][-1])
+            poole_second = int(game[1][-1])
+            poole_draw = None
+
+            if length == 3:
+                poole_draw = game[2][-1]
+
+            prompts.append(
+                get_prompt_recorde_poole(
+                    game_key, poole_first, poole_second, poole_draw
+                )
+            )
+            
+        db.action(*prompts)
+        # count = 2
+        # for line, game in zip(gs_data, games_data):
+        #     url = line[0][-1]
+        #     if url != game['url']:
+        #         game['url'] = url
+        #         update = True
+
+        #     for pair, row in zip(game['coeffs'].items(), line):
+        #         length = len(row)
+        #         pair_gs = tuple()
+
+        #         if length == 3: pair_gs = (row[-1], "")
+        #         elif length == 4: pair_gs = tuple(row[-2:])
+        #         elif length == 5: pair_gs = tuple(row[-3:-1])
+
+        #         if pair != pair_gs:
+        #             game['coeffs'][pair_gs[0]] = pair_gs[1]
+        #             update = True
+
+        # if update:
+        #     for i, j in zip(games_data, games):
+        #         games[j] = i
             
 
     @staticmethod

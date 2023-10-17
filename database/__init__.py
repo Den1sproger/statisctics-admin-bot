@@ -10,6 +10,16 @@ PROMPT_DELETE_ANSWERS = "TRUNCATE answers;"
 PROMPT_RESET_CURRENT_STATISTICS = "UPDATE currents_users_roi SET positive_bets=0, negative_bets=0, roi=0;"
 
 
+def get_prompt_recorde_poole(game_key: str,
+                             poole_first: int,
+                             poole_second: int,
+                             poole_draw: int = None) -> str:
+    if poole_draw:
+        return f"UPDATE games SET poole_first={poole_first}, poole_second={poole_second}, poole_draw={poole_draw} WHERE game_key='{game_key}';"
+    else:
+        return f"UPDATE games SET poole_first={poole_first}, poole_second={poole_second} WHERE game_key='{game_key}';"
+    
+
 def get_prompt_add_game(game_key: str,
                         sport: str,
                         begin_time: str,
@@ -65,6 +75,7 @@ __all__ = [
     'PROMPT_DELETE_GAMES',
     'PROMPT_DELETE_ANSWERS',
     'PROMPT_RESET_CURRENT_STATISTICS',
+    'get_prompt_recorde_poole',
     'get_prompt_add_game',
     'get_prompt_update_status',
     'get_prompt_view_users_by_answer',
