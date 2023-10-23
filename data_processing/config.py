@@ -10,10 +10,9 @@ from gspread.spreadsheet import Spreadsheet
 from gspread.exceptions import APIError
 from googlesheets import CREDENTIALS
 
-# /home/tournament_management/
 
-FILEPATH_JSON = "data_processing/scrapping/games.json"
 
+FILEPATH_JSON = "/home/statistics_management/data_processing/scrapping/games.json"
 
 
 def send_msg(msg_text: str,
