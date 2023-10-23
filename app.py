@@ -2,13 +2,12 @@ import logging
 
 from aiogram import executor
 from telegram_bot import dp, set_default_commands
-# from telegram_bot.handlers.inline_buttons import *
 from telegram_bot.handlers.start import *
 from telegram_bot.handlers.default_commands import *
 
 
-# LOG_FILENAME = "/home/statistics_management/py_log.log"
-# logging.basicConfig(level=logging.INFO, filename=LOG_FILENAME, filemode="w")
+LOG_FILENAME = "/home/statistics_management/py_log.log"
+logging.basicConfig(level=logging.INFO, filename=LOG_FILENAME, filemode="w")
 
 
 async def on_startup(_):
