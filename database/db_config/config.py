@@ -10,4 +10,4 @@ user = os.getenv('user')
 password = os.getenv('password')
 db_name = os.getenv('db_statistics_name')
 
-SPORT_TYPES = ['SOCCER', 'HOCKEY', 'BASKETBALL']
+SPORT_TYPES = ['Футбол', 'Хоккей', 'Баскетбол']
