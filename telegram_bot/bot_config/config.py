@@ -9,7 +9,7 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 TOKEN = os.getenv('STATISTICS_ADMIN_TOKEN')
-USER_TOKEN = os.getenv('STATISTICS_TOKEN')
+USER_TOKEN = os.getenv('STATISTIC_TOKEN')
 ADMIN = int(os.getenv('ADMIN'))
 bot = Bot(TOKEN)
 users_bot = Bot(USER_TOKEN)

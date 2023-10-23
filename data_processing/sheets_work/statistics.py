@@ -2,8 +2,7 @@ import string
 
 from ..config import Connect
 from database import (SPORT_TYPES,
-                      Database,
-                      PROMPT_VIEW_LAST_SCORES)
+                      Database)
 from googlesheets import SPREADSHEET_ID
 
 
@@ -34,17 +33,18 @@ class Stat_sport_types(Connect):
                      sport_type: str) -> str:
         assert sport_type in SPORT_TYPES, 'Unknown sport type'
 
-        if sport_type == 'SOCCER':
+        if sport_type == 'Футбол':
             return self.CELLS_COLS[column]
-        elif sport_type == 'HOCKEY':
+        elif sport_type == 'Хоккей':
             return self.cells[self.cells.index(self.CELLS_COLS[column]) + self.OFFSET]
         else:
             return self.cells[self.cells.index(self.CELLS_COLS[column]) + self.OFFSET * 2]
 
 
-    def reset_stat(self, chat_id: str) -> None:
+    def reset_stat(self) -> None:
         update_data = []
-
+        row = len(self.worksheet.col_values(1))
+        
         for sport_type in SPORT_TYPES:
             update_data.append(
                 {

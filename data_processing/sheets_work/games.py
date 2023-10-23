@@ -148,12 +148,12 @@ class Games(Connect):
         if last_row < 2:
             last_row = 2
         cells_range = f'{self.CELLS_COLS["game_number"]}2:' \
-                        f'{self.CELLS_COLS["url"]}{last_row}'
+                        f'{self.CELLS_COLS["poole"]}{last_row}'
         self.worksheet.batch_clear([cells_range])
         self.worksheet.unmerge_cells(cells_range)
         
         self.worksheet.format(
-            ranges=f"{self.CELLS_COLS['teams']}2:{self.CELLS_COLS['url']}{last_row}",
+            ranges=f"{self.CELLS_COLS['teams']}2:{self.CELLS_COLS['poole']}{last_row}",
             format={
                 "backgroundColor": {"red": 1.0, "green": 1.0, 'blue': 1.0}
             }
@@ -209,8 +209,8 @@ class Games(Connect):
 
 
     def recorde_poole(self):
-        # approve the games in table of the games 
-        
+        # take the entered votes in the last column and recorde to database
+
         with open(FILEPATH_JSON, 'r', encoding='utf-8') as file:
             games = json.load(file)
         games_data = list(games.values())
@@ -225,7 +225,6 @@ class Games(Connect):
             count += length
         
         gs_data = self.worksheet.batch_get(getting_data)
-        print(gs_data)
 
         db = Database()
         prompts = []
@@ -251,28 +250,6 @@ class Games(Connect):
             )
             
         db.action(*prompts)
-        # count = 2
-        # for line, game in zip(gs_data, games_data):
-        #     url = line[0][-1]
-        #     if url != game['url']:
-        #         game['url'] = url
-        #         update = True
-
-        #     for pair, row in zip(game['coeffs'].items(), line):
-        #         length = len(row)
-        #         pair_gs = tuple()
-
-        #         if length == 3: pair_gs = (row[-1], "")
-        #         elif length == 4: pair_gs = tuple(row[-2:])
-        #         elif length == 5: pair_gs = tuple(row[-3:-1])
-
-        #         if pair != pair_gs:
-        #             game['coeffs'][pair_gs[0]] = pair_gs[1]
-        #             update = True
-
-        # if update:
-        #     for i, j in zip(games_data, games):
-        #         games[j] = i
             
 
     @staticmethod
