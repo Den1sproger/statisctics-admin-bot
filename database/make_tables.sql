@@ -43,12 +43,13 @@ CREATE TABLE positive_votes_poole
 INSERT INTO positive_votes_poole (first_team, second_team, draw) VALUES (0, 0, 0);
 
 
-CREATE TABLE currents_users_roi
+CREATE TABLE sports_users_roi
 (
     chat_id varchar(50) NOT NULL,
     sport_type varchar(15) NOT NULL,
     positive_bets int NOT NULL,
     negative_bets int NOT NULL,
+    coeff_sum float NOT NULL,
     roi float NOT NULL,
     CONSTRAINT chat_id_sport_type PRIMARY KEY (chat_id, sport_type)
 );
@@ -78,5 +79,6 @@ CREATE TABLE teams
     positive_bets int NOT NULL,
     negative_bets int NOT NULL,
     teammates int NOT NULL,
+    coeff_sum float NOT NULL,
     roi float NOT NULL
 );
