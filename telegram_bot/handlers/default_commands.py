@@ -2,14 +2,14 @@ import logging
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command, Text
-from data_processing import Collection, Games
+from data_processing import Collection, Games, Calculate
 from database import (Database,
                       PROMPT_VIEW_GAMES,
                       PROMPT_DELETE_GAMES,
-                      PROMPT_RESET_CURRENT_STATISTICS,
                       PROMPT_DELETE_ANSWERS)
 from ..bot_config import dp, ADMIN
 from ..keyboards import get_ikb_gs_url, confirm_finish_ikb
+
 
 
 
@@ -110,6 +110,24 @@ async def remember_poole(message: types.Message) -> None:
 
 
 
+
+@dp.message_handler(Text(equals='🧮Рассчитать результаты'), user_id=ADMIN)
+@dp.message_handler(Command('calculate'), user_id=ADMIN)
+async def full_calculate(message: types.Message) -> None:
+    await message.answer('🧮🧮🧮Рассчитываю...')
+
+    try:
+        calc = Calculate()
+        calc.check_games()
+    except Exception as _ex:
+        await message.edit_text('❌❌Ошибка❌❌')
+        logging.info(f'calculate => {_ex}')
+        return
+    
+    await message.edit_text('✅✅✅Расчет успешно произведен, статистика обновлена')
+
+
+
 @dp.message_handler(Text(equals='🏁Закончить турнир'), user_id=ADMIN)
 @dp.message_handler(Command('finish'), user_id=ADMIN)
 async def finish(message: types.Message) -> None:
@@ -125,8 +143,7 @@ async def confirm_finish(callback: types.CallbackQuery) -> None:
         db = Database()
         db.action(
             PROMPT_DELETE_ANSWERS,
-            PROMPT_DELETE_GAMES,
-            PROMPT_RESET_CURRENT_STATISTICS
+            PROMPT_DELETE_GAMES
         )
         games_gs = Games()
         games_gs.clear_table()

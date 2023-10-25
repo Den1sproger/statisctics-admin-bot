@@ -3,11 +3,13 @@ from .db_config import SPORT_TYPES
 
 
 
-PROMPT_VIEW_GAMES = "SELECT game_key, sport, begin_time, first_team, first_coeff, second_team," \
-                    f"second_coeff, draw_coeff, url FROM games;"
+PROMPT_VIEW_GAMES = "SELECT * FROM games;"
+PROMPT_VIEW_NO_END_GAMES = "SELECT * FROM games WHERE game_status<>3"
 PROMPT_DELETE_GAMES = "TRUNCATE games;"
 PROMPT_DELETE_ANSWERS = "TRUNCATE answers;"
-PROMPT_RESET_CURRENT_STATISTICS = "UPDATE currents_users_roi SET positive_bets=0, negative_bets=0, roi=0;"
+PROMPT_RESET_CURRENT_STATISTICS = "UPDATE sports_users_roi SET positive_bets=0, negative_bets=0, roi=0;"
+PROMPT_VIEW_USERS_INFO = "SELECT * FROM users"
+
 
 
 def get_prompt_recorde_poole(game_key: str,
@@ -47,8 +49,12 @@ def get_prompt_update_status(game_key: str,
     return f"UPDATE games SET game_status={status} WHERE game_key='{game_key}';"
 
 
-def get_prompt_view_users_by_answer(game_key: str) -> str:
+def get_prompt_view_users_answers(game_key: str) -> str:
     return f"SELECT chat_id, answer FROM answers WHERE game_key='{game_key}';"
+
+
+def get_prompt_view_users_sport_info(sport_type: str) -> str:
+    return f"SELECT * FROM sports_users_roi WHERE spor_type='{sport_type}';"
 
 
 def get_prompt_view_game_coeffs(game_key: str) -> str:
@@ -67,20 +73,79 @@ def get_prompt_view_nick_by_id(chat_id: str) -> str:
     return f"SELECT nickname FROM users WHERE chat_id='{chat_id}';"
 
 
+def get_prompts_increase_positive_bets(chat_id: str,
+                                       coeff: float,
+                                       team: str,
+                                       sport_type: str,
+                                       team_name: str = None) -> list[str]:
+    prompts = [
+        f"UPDATE sports_users_roi SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE chat_id='{chat_id}' AND sport_type='{sport_type};",
+        f"UPDATE users SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE chat_id='{chat_id}';",
+        f"UPDATE users SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE nickname='poole';",
+        f"UPDATE positive_votes_poole SET {team}={team}+1;"
+    ]
+    if team_name:
+        prompts.append(
+            f"UPDATE teams SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE team_name='{team_name}';"
+        )
+    return prompts
+
+
+def get_prompts_increase_negative_bets(chat_id: str,
+                                       sport_type: str,
+                                       team_name: str = None) -> list[str]:
+    prompts = [
+        f"UPDATE sports_users_roi SET negative_bets=negative_bets+1 WHERE chat_id='{chat_id}' AND sport_type='{sport_type}';",
+        f"UPDATE users SET negative_bets=negative_bets+1 WHERE chat_id='{chat_id}';",
+        f"UPDATE users SET negative_bets=negative_bets+1 WHERE nickname='poole';"
+    ]
+    if team_name:
+        prompts.append(
+            f"UPDATE teams SET negative_bets=negative_bets+1 WHERE team_name='{team_name}';"
+        )
+    return prompts
+
+
+def get_prompts_calculate_roi(chat_id: str,
+                              sport_type: str,
+                              team_name: str = None) -> list[str]:
+    prompts = [
+        f"UPDATE sports_users_roi SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE chat_id='{chat_id}' AND sport_type='{sport_type};",
+        f"UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE chat_id='{chat_id}';",
+        f"UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE nickname='poole';"
+    ]
+    if team_name:
+        prompts.append(
+            f"UPDATE teams SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE team_name='{team_name}';"
+        )
+    return prompts
+
+
+def get_prompt_view_user_team(chat_id: str) -> str:
+    return f"SELECT team_name FROM users WHERE chat_id='{chat_id}';"
+
+
 
 __all__ = [
     'Database',
     'SPORT_TYPES',
     'PROMPT_VIEW_GAMES',
+    'PROMPT_VIEW_NO_END_GAMES',
     'PROMPT_DELETE_GAMES',
     'PROMPT_DELETE_ANSWERS',
     'PROMPT_RESET_CURRENT_STATISTICS',
+    'PROMPT_VIEW_USERS_INFO',
+    'get_prompts_increase_positive_bets',
+    'get_prompts_increase_negative_bets',
+    'get_prompts_calculate_roi',
     'get_prompt_recorde_poole',
     'get_prompt_add_game',
     'get_prompt_update_status',
-    'get_prompt_view_users_by_answer',
+    'get_prompt_view_users_answers',
     'get_prompt_view_game_coeffs',
     'get_prompt_view_username_by_id',
     'get_prompt_view_chat_id_by_nick',
-    'get_prompt_view_nick_by_id'
+    'get_prompt_view_nick_by_id',
+    'get_prompt_view_user_team',
+    'get_prompt_view_users_sport_info'
 ]
