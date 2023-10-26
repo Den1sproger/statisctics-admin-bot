@@ -23,9 +23,6 @@ class Calculate(Scrapper):
         3: 'draw'
     }
 
-    def __init__(self):
-        pass
-
 
     def check_games(self):
         db = Database()
@@ -46,9 +43,9 @@ class Calculate(Scrapper):
                 # color cell
                 table_games = Games()
                 if not result:
-                    table_games.color_cell(game_key=game, color='red')
+                    table_games.color_cell(game_key=game_key, color='red')
                     continue
-                table_games.color_cell(game_key=game, color='green', winner=result)
+                table_games.color_cell(game_key=game_key, color='green', winner=result)
                 
                 # create list of coeffs
                 coeffs = [game['first_coeff'], game['second_coeff']]
@@ -68,7 +65,7 @@ class Calculate(Scrapper):
                         win_coeff = coeffs[result - 1]
                         change_bets_count = get_prompts_increase_positive_bets(
                             chat_id=user['chat_id'],
-                            coeff=win_coeff,
+                            coeff=float(win_coeff.replace(',', '.')),
                             team=self.TEAMS[result],
                             sport_type=game['sport'],
                             team_name=user_team
@@ -80,7 +77,11 @@ class Calculate(Scrapper):
                             team_name=user_team
                         )
                     prompts += change_bets_count
-                    calc_roi = get_prompts_calculate_roi()
+                    calc_roi = get_prompts_calculate_roi(
+                        chat_id=user['chat_id'],
+                        sport_type=game['sport'],
+                        team_name=user_team
+                    )
                     prompts += calc_roi
 
                 if prompts: db.action(*prompts)

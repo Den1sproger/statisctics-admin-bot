@@ -25,7 +25,7 @@ class Stat_sport_types(Connect):
 
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(SPREADSHEET_ID)
         self.worksheet = self.spreadsheet.worksheet(self.SHEET_NAME)
         self.cells = string.ascii_uppercase
 
@@ -70,7 +70,7 @@ class Stat_sport_types(Connect):
             for user in users_info:
                 count = users_chat_id.index(user['chat_id']) + 1
                 update_data.append({
-                    "range": f"{self.CELLS_COLS['positive_bets']}{count}:{self.CELLS_COLS['roi']}{count}",
+                    "range": f"{self.__get_column('positive_bets', sport_type)}{count}:{self.__get_column('roi', sport_type)}{count}",
                     'values': [[
                         user['positive_bets'],
                         user['negative_bets'],
@@ -98,18 +98,19 @@ class Stat_mass(Connect):
 
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(SPREADSHEET_ID)
         self.worksheet = self.spreadsheet.worksheet(self.SHEET_NAME)
 
 
     def update_data(self):
         users_chat_id = self.worksheet.col_values(1)
+
         db = Database()
         users_info = db.get_data_list(PROMPT_VIEW_USERS_INFO)
         update_data = []
 
         for user in users_info:
-            count = users_chat_id.index(user['chat_id']) + 1
+            count = users_chat_id.index(str(user['chat_id'])) + 1
             update_data.append({
                 'range': f"{self.CELLS_COLS['positive_bets']}{count}:{self.CELLS_COLS['coeff_sum']}{count}",
                 'values': [[
