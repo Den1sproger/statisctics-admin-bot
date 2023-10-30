@@ -2,12 +2,18 @@ import logging
 
 from database import (Database,
                       PROMPT_VIEW_NO_END_GAMES,
+                      PROMPT_INCREASE_NEGATIVE_BETS_POOLE,
+                      PROMPT_CALC_POOLE_ROI,
                       get_prompt_view_users_answers,
                       get_prompt_update_status,
                       get_prompt_view_user_team,
                       get_prompts_increase_positive_bets,
                       get_prompts_increase_negative_bets,
-                      get_prompts_calculate_roi)
+                      get_prompts_calculate_roi,
+                      get_prompt_increase_positive_bets_poole,
+                      get_prompt_increase_positive_bets_team,
+                      get_prompt_increase_negative_bets_team,
+                      get_prompt_calculate_teams_roi)
 from ..sheets_work.games import Games
 from ..sheets_work.statistics import Stat_mass, Stat_sport_types
 from .base import Scrapper
@@ -15,13 +21,104 @@ from .base import Scrapper
 
 
 class Calculate(Scrapper):
-    """"""
+    """Full calculate of the all statistics"""
 
     TEAMS = {
         1: 'first_team',
         2: 'second_team',
         3: 'draw'
     }
+    
+
+    def __get_teams_prompts(self, teams_votes: dict,
+                            result: int,
+                            win_coeff: float) -> list:
+        teams_prompts = []
+
+        for team_name, votes in teams_votes.items():
+            positive_votes: int
+            negative_votes = []
+
+            for item, count in zip(votes.values(), (1, 2, 3)):
+                if count == result:
+                    positive_votes = item
+                else:
+                    negative_votes.append(item)
+
+            if (positive_votes > negative_votes[0]) and (positive_votes > negative_votes[1]):
+                teams_prompts.append(
+                    get_prompt_increase_positive_bets_team(win_coeff, team_name)
+                )
+                teams_prompts.append(
+                    get_prompt_calculate_teams_roi(team_name)
+                )
+                
+            elif (positive_votes < negative_votes[0]) and (positive_votes < negative_votes[1]):
+                teams_prompts.append(
+                    get_prompt_increase_negative_bets_team(team_name)
+                )
+                teams_prompts.append(
+                    get_prompt_calculate_teams_roi(team_name)
+                )
+
+        return teams_prompts
+    
+    
+    
+    def __get_poole_prompts(self, users_votes: tuple[int],
+                            result: int,
+                            win_coeff: float) -> list:
+        positive_votes: int
+        negative_votes = []
+        for item, count in zip(users_votes, (1, 2, 3)):
+            if count == result:
+                positive_votes = item
+            else:
+                negative_votes.append(item)
+
+        poole_prompts = []
+
+        if (positive_votes > negative_votes[0]) and (positive_votes > negative_votes[1]):
+            poole_prompts = [
+                get_prompt_increase_positive_bets_poole(win_coeff),
+                PROMPT_CALC_POOLE_ROI
+            ]
+        elif (positive_votes < negative_votes[0]) and (positive_votes < negative_votes[1]):
+            poole_prompts = [
+                PROMPT_INCREASE_NEGATIVE_BETS_POOLE,
+                PROMPT_CALC_POOLE_ROI
+            ]
+
+        return poole_prompts
+
+
+
+    def __get_winner(self, game_id: str) -> int | bool:
+        # get the end scores of the teams
+        
+        data = self._create_game_request(
+            url=f'https://local-ruua.flashscore.ninja/46/x/feed/dc_1_{game_id}'
+        )
+        string = {}
+        for item in data:
+            key = item.split('÷')[0]
+            value = item.split('÷')[-1]
+            string[key] = value
+
+        try:
+            score_1 = string['DG']
+            score_2 = string['DH']
+        except Exception as _ex:
+            logging.info(_ex)
+            return False
+        
+        if score_1 > score_2:
+            return 1        # the first team win
+        elif score_1 < score_2:
+            return 2        # the second team win
+        else:
+            return 3        # draw
+        
 
 
     def check_games(self):
@@ -51,21 +148,48 @@ class Calculate(Scrapper):
                 coeffs = [game['first_coeff'], game['second_coeff']]
                 if game['draw_coeff'] != None:
                     coeffs.append(game['draw_coeff'])
+
+                win_coeff = float(coeffs[result - 1].replace(',', '.'))
                 
                 users = db.get_data_list(
                     get_prompt_view_users_answers(game_key)
                 )
+                
+                first_team_votes = 0
+                second_team_votes = 0
+                draw_votes = 0
+                teams_votes = {}
 
+                # user statistics
                 for user in users:
+                    answer = user['answer']
+                    if answer == 1:
+                        first_team_votes += 1
+                    elif answer == 2:
+                        second_team_votes += 1
+                    else:
+                        draw_votes += 1
+
                     user_team = db.get_data_list(
                         get_prompt_view_user_team(user['chat_id'])
                     )[0]['team_name']
 
+                    if user_team:
+                        if user_team in teams_votes:
+                            teams_votes[user_team] = {'first_team': 0, 'second_team': 0, 'draw': 0}
+
+                        if answer == 1:
+                            teams_votes[user_team]['first_team'] += 1
+                        elif answer == 2:
+                            teams_votes[user_team]['second_team'] += 1
+                        else:
+                            teams_votes[user_team]['draw'] += 1
+
+
                     if result == user['answer']:
-                        win_coeff = coeffs[result - 1]
                         change_bets_count = get_prompts_increase_positive_bets(
                             chat_id=user['chat_id'],
-                            coeff=float(win_coeff.replace(',', '.')),
+                            coeff=win_coeff,
                             team=self.TEAMS[result],
                             sport_type=game['sport'],
                             team_name=user_team
@@ -83,39 +207,24 @@ class Calculate(Scrapper):
                         team_name=user_team
                     )
                     prompts += calc_roi
+                
+                # poole statistics
+                poole_prompts = self.__get_poole_prompts(
+                    teams_votes=(first_team_votes, second_team_votes, draw_votes),
+                    result=result,
+                    win_coeff=win_coeff
+                )
 
-                if prompts: db.action(*prompts)
+                # teams statistics
+                teams_prompts = self.__get_teams_prompts(teams_votes, result, win_coeff)
+
+                if prompts:
+                    prompts += poole_prompts
+                    prompts += teams_prompts
+                    db.action(*prompts)
 
         if no_finished_games:
             sm = Stat_mass()
             sm.update_data()
             sst = Stat_sport_types()
             sst.update_data()
-        
-    
-    
-    def __get_winner(self, game_id: str) -> int | bool:
-        # get the end scores of the teams
-        
-        data = self._create_game_request(
-            url=f'https://local-ruua.flashscore.ninja/46/x/feed/dc_1_{game_id}'
-        )
-        string = {}
-        for item in data:
-            key = item.split('÷')[0]
-            value = item.split('÷')[-1]
-            string[key] = value
-
-        try:
-            score_1 = string['DG']
-            score_2 = string['DH']
-        except Exception as _ex:
-            logging.error(_ex)
-            return False
-        
-        if score_1 > score_2:
-            return 1        # the first team win
-        elif score_1 < score_2:
-            return 2        # the second team win
-        else:
-            return 3        # draw
