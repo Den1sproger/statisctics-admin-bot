@@ -45,8 +45,8 @@ class Collection(Scrapper):
 
         # email and password to flashscorekz.com
         if get_full_data:
-            self.email = ws_games.acell(self.EMAIL_CELL).value
-            self.password = ws_games.acell(self.PASSWORD_CELL).value
+            self.__email = ws_games.acell(self.EMAIL_CELL).value
+            self.__password = ws_games.acell(self.PASSWORD_CELL).value
 
 
     def __create_post_request(self,
@@ -80,8 +80,8 @@ class Collection(Scrapper):
             'user-agent': self.ua.random
         }
         params = {
-            "email": self.email,
-            "password": self.password,
+            "email": self.__email,
+            "password": self.__password,
             "namespace": "flashscore",
             "project": 46
         }
