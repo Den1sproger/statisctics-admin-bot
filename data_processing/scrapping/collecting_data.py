@@ -27,7 +27,7 @@ class Collection(Scrapper):
     IS_THERE_DRAW = {
         'Футбол': True,
         'Баскетбол': False,
-        'Хоккей': False
+        'Хоккей': True
     }
     EMAIL_CELL = 'I3'
     PASSWORD_CELL = 'I4'

@@ -107,8 +107,8 @@ class Calculate(Scrapper):
             string[key] = value
 
         try:
-            score_1 = string['DE']
-            score_2 = string['DF']
+            score_1 = string['DG']
+            score_2 = string['DH']
         except Exception as _ex:
             logging.error(_ex)
             return False
