@@ -9,6 +9,8 @@ PROMPT_DELETE_GAMES = "TRUNCATE games;"
 PROMPT_DELETE_ANSWERS = "TRUNCATE answers;"
 PROMPT_RESET_CURRENT_STATISTICS = "UPDATE sports_users_roi SET positive_bets=0, negative_bets=0, roi=0;"
 PROMPT_VIEW_USERS_INFO = "SELECT * FROM users;"
+PROMPT_INCREASE_NEGATIVE_BETS_POOLE = "UPDATE users SET negative_bets=negative_bets+1 WHERE username='poole';"
+PROMPT_CALC_POOLE_ROI = "UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE username='poole';"
 
 
 
@@ -76,49 +78,45 @@ def get_prompt_view_nick_by_id(chat_id: str) -> str:
 def get_prompts_increase_positive_bets(chat_id: str,
                                        coeff: float,
                                        team: str,
-                                       sport_type: str,
-                                       team_name: str = None) -> list[str]:
-    prompts = [
+                                       sport_type: str) -> list[str]:
+    return [
         f"UPDATE sports_users_roi SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE chat_id='{chat_id}' AND sport_type='{sport_type}';",
-        f"UPDATE users SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE chat_id='{chat_id}';",
-        f"UPDATE users SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE username='poole';",
-        f"UPDATE positive_votes_poole SET {team}={team}+1;"
+        f"UPDATE users SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE chat_id='{chat_id}';"
+        # f"UPDATE positive_votes_poole SET {team}={team}+1;"
     ]
-    if team_name:
-        prompts.append(
-            f"UPDATE teams SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE team_name='{team_name}';"
-        )
-    return prompts
 
 
 def get_prompts_increase_negative_bets(chat_id: str,
-                                       sport_type: str,
-                                       team_name: str = None) -> list[str]:
-    prompts = [
+                                       sport_type: str) -> list[str]:
+    return [
         f"UPDATE sports_users_roi SET negative_bets=negative_bets+1 WHERE chat_id='{chat_id}' AND sport_type='{sport_type}';",
         f"UPDATE users SET negative_bets=negative_bets+1 WHERE chat_id='{chat_id}';",
-        f"UPDATE users SET negative_bets=negative_bets+1 WHERE username='poole';"
     ]
-    if team_name:
-        prompts.append(
-            f"UPDATE teams SET negative_bets=negative_bets+1 WHERE team_name='{team_name}';"
-        )
-    return prompts
+
+
+def get_prompt_increase_positive_bets_poole(coeff: float) -> str:
+    return f"UPDATE users SET positive_bets=positive_bets+1, coeff_sum=coeff_sum+{coeff} WHERE username='poole';"
+
+
+def get_prompt_increase_positive_bets_team(coeff: float,
+                                           team_name: str) -> str:
+    return f"UPDATE teams SET coeff_sum=coeff_sum+{coeff}, positive_bets=positive_bets+1 WHERE team_name='{team_name}';"
+
+
+def get_prompt_increase_negative_bets_team(team_name: str) -> str:
+    return f"UPDATE teams SET negative_bets=negative_bets+1, WHERE team_name='{team_name}';"
 
 
 def get_prompts_calculate_roi(chat_id: str,
-                              sport_type: str,
-                              team_name: str = None) -> list[str]:
-    prompts = [
+                              sport_type: str) -> list[str]:
+    return [
         f"UPDATE sports_users_roi SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE chat_id='{chat_id}' AND sport_type='{sport_type}';",
-        f"UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE chat_id='{chat_id}';",
-        f"UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE username='poole';"
+        f"UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE chat_id='{chat_id}';"
     ]
-    if team_name:
-        prompts.append(
-            f"UPDATE teams SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE team_name='{team_name}';"
-        )
-    return prompts
+
+
+def get_prompt_calculate_teams_roi(team_name: str = None) -> str:
+    return f"UPDATE teams SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE team_name='{team_name}';"
 
 
 def get_prompt_view_user_team(chat_id: str) -> str:
@@ -135,9 +133,15 @@ __all__ = [
     'PROMPT_DELETE_ANSWERS',
     'PROMPT_RESET_CURRENT_STATISTICS',
     'PROMPT_VIEW_USERS_INFO',
+    'PROMPT_INCREASE_NEGATIVE_BETS_POOLE',
+    'PROMPT_CALC_POOLE_ROI',
     'get_prompts_increase_positive_bets',
     'get_prompts_increase_negative_bets',
+    'get_prompt_increase_positive_bets_poole',
+    'get_prompt_increase_positive_bets_team',
+    'get_prompt_increase_negative_bets_team',
     'get_prompts_calculate_roi',
+    'get_prompt_calculate_teams_roi',
     'get_prompt_recorde_poole',
     'get_prompt_add_game',
     'get_prompt_update_status',
