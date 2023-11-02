@@ -36,10 +36,22 @@ class Calculate(Scrapper):
         teams_prompts = []
 
         for team_name, votes in teams_votes.items():
+            team_votes = list(votes.values())
             positive_votes: int
             negative_votes = []
 
-            for item, count in zip(votes.values(), (1, 2, 3)):
+            if 0 in team_votes:
+                tv = team_votes.copy()
+                tv.remove(0)
+                
+                if tv[0] == tv[1]:
+                    continue
+                elif 0 in tv:
+                    tv.remove(0)
+                    if tv[0] == 1:
+                        continue
+
+            for item, count in zip(team_votes, (1, 2, 3)):
                 if count == result:
                     positive_votes = item
                 else:
@@ -53,7 +65,7 @@ class Calculate(Scrapper):
                     get_prompt_calculate_teams_roi(team_name)
                 )
                 
-            elif (positive_votes < negative_votes[0]) and (positive_votes < negative_votes[1]):
+            elif (positive_votes < negative_votes[0]) or (positive_votes < negative_votes[1]):
                 teams_prompts.append(
                     get_prompt_increase_negative_bets_team(team_name)
                 )
@@ -68,22 +80,28 @@ class Calculate(Scrapper):
     def __get_poole_prompts(self, users_votes: tuple[int],
                             result: int,
                             win_coeff: float) -> list:
+        poole_prompts = []
         positive_votes: int
         negative_votes = []
+
+        if 0 in users_votes:
+            tv = list(users_votes)
+            tv.remove(0)
+            if tv[0] == tv[1]:
+                return poole_prompts
+
         for item, count in zip(users_votes, (1, 2, 3)):
             if count == result:
                 positive_votes = item
             else:
                 negative_votes.append(item)
 
-        poole_prompts = []
-
         if (positive_votes > negative_votes[0]) and (positive_votes > negative_votes[1]):
             poole_prompts = [
                 get_prompt_increase_positive_bets_poole(win_coeff),
                 PROMPT_CALC_POOLE_ROI
             ]
-        elif (positive_votes < negative_votes[0]) and (positive_votes < negative_votes[1]):
+        elif (positive_votes < negative_votes[0]) or (positive_votes < negative_votes[1]):
             poole_prompts = [
                 PROMPT_INCREASE_NEGATIVE_BETS_POOLE,
                 PROMPT_CALC_POOLE_ROI
@@ -175,7 +193,7 @@ class Calculate(Scrapper):
                     )[0]['team_name']
 
                     if user_team:
-                        if user_team in teams_votes:
+                        if user_team not in teams_votes:
                             teams_votes[user_team] = {'first_team': 0, 'second_team': 0, 'draw': 0}
 
                         if answer == 1:
@@ -191,26 +209,23 @@ class Calculate(Scrapper):
                             chat_id=user['chat_id'],
                             coeff=win_coeff,
                             team=self.TEAMS[result],
-                            sport_type=game['sport'],
-                            team_name=user_team
+                            sport_type=game['sport']
                         )
                     else:
                         change_bets_count = get_prompts_increase_negative_bets(
                             chat_id=user['chat_id'],
-                            sport_type=game['sport'],
-                            team_name=user_team
+                            sport_type=game['sport']
                         )
                     prompts += change_bets_count
                     calc_roi = get_prompts_calculate_roi(
                         chat_id=user['chat_id'],
-                        sport_type=game['sport'],
-                        team_name=user_team
+                        sport_type=game['sport']
                     )
                     prompts += calc_roi
                 
                 # poole statistics
                 poole_prompts = self.__get_poole_prompts(
-                    teams_votes=(first_team_votes, second_team_votes, draw_votes),
+                    users_votes=(first_team_votes, second_team_votes, draw_votes),
                     result=result,
                     win_coeff=win_coeff
                 )
