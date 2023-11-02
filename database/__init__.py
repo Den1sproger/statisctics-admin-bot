@@ -104,7 +104,7 @@ def get_prompt_increase_positive_bets_team(coeff: float,
 
 
 def get_prompt_increase_negative_bets_team(team_name: str) -> str:
-    return f"UPDATE teams SET negative_bets=negative_bets+1, WHERE team_name='{team_name}';"
+    return f"UPDATE teams SET negative_bets=negative_bets+1 WHERE team_name='{team_name}';"
 
 
 def get_prompts_calculate_roi(chat_id: str,
