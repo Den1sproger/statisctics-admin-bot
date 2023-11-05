@@ -26,6 +26,7 @@ async def set_default_commands(dp: Dispatcher) -> None:
             BotCommand('approve_games', 'Утвердить матчи'),
             BotCommand('remember_poole', 'Запомнить пул'),
             BotCommand('calculate', 'Рассчитать результаты'),
+            BotCommand('update_coeffs', 'Обновить коэффициенты'),
             BotCommand('finish', 'Закончить турнир')
         ]
     )

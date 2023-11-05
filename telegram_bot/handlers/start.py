@@ -18,6 +18,7 @@ HELP_TEXT = """
 /clear_table - очистить таблицу
 /approve_games - утвердить матчи
 /calculate - рассчитать результаты
+/update_coeffs - Обновить коэффициенты
 /finish - Закончить турнир
 """
 

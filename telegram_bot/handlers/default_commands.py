@@ -1,12 +1,17 @@
 import logging
+import json
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command, Text
-from data_processing import Collection, Games, Calculate
+from data_processing import (Collection,
+                             Games,
+                             Calculate,
+                             FILEPATH_JSON)
 from database import (Database,
                       PROMPT_VIEW_GAMES,
                       PROMPT_DELETE_GAMES,
-                      PROMPT_DELETE_ANSWERS)
+                      PROMPT_DELETE_ANSWERS,
+                      get_prompt_update_coeffs)
 from ..bot_config import dp, ADMIN
 from ..keyboards import get_ikb_gs_url, confirm_finish_ikb
 
@@ -120,11 +125,60 @@ async def full_calculate(message: types.Message) -> None:
         calc = Calculate()
         calc.check_games()
     except Exception as _ex:
-        await message.edit_text('❌❌Ошибка❌❌')
+        await message.answer('❌❌Ошибка❌❌')
         logging.info(f'calculate => {_ex}')
         return
     
-    await message.edit_text('✅✅✅Расчет успешно произведен, статистика обновлена')
+    await message.answer('✅✅✅Расчет успешно произведен, статистика обновлена')
+
+
+
+@dp.message_handler(Text(equals='🔢Обновить коэффициенты'), user_id=ADMIN)
+@dp.message_handler(Command('update_coeffs'), user_id=ADMIN)
+async def update_coeffs(message: types.Message) -> None:
+    try:
+        with open(FILEPATH_JSON, 'r', encoding='utf-8') as file:
+            games = json.load(file)
+        
+        if not games:
+            await message.answer('❌❌У вас не заполнены матчи')
+            return
+        
+        scrapper = Collection()
+        db = Database()
+
+        prompts = []
+        for game_key in games:
+            coeffs = scrapper.get_coeffs(game_id=game_key,
+                                        sport_type=games[game_key]['sport'])
+            prompts.append(
+                get_prompt_update_coeffs(game_key, coeffs)
+            )
+
+            teams = tuple(games[game_key]['coeffs'].keys())
+            
+            games[game_key]['coeffs'][teams[0]] = coeffs[-2]
+            games[game_key]['coeffs'][teams[1]] = coeffs[-1]
+
+            if (len(teams) == 3) and (len(coeffs) == 3):
+                games[game_key]['coeffs'][teams[2]] = coeffs[0]
+
+        db.action(*prompts)
+
+        with open(FILEPATH_JSON, 'w', encoding='utf-8') as file:
+            json.dump(games, file, indent=4, ensure_ascii=False)
+        
+        games = Games()
+        games.update_coeffs()
+    except FileNotFoundError:
+        await message.answer('❌❌У вас не заполнены матчи')
+        return
+    except Exception as _ex:
+        await message.answer('❌❌Ошибка❌❌')
+        logging.info(f'update coeffs => {_ex}')
+        return
+
+    await message.answer('✅Коэффициенты обновлены')
 
 
 

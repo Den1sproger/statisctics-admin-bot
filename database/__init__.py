@@ -123,6 +123,22 @@ def get_prompt_view_user_team(chat_id: str) -> str:
     return f"SELECT team_name FROM users WHERE chat_id='{chat_id}';"
 
 
+def get_prompt_update_coeffs(game_key: str,
+                             coeffs: list[str]) -> str:
+    coeff_1 = coeffs[-2]
+    coeff_2 = coeffs[-1]
+    
+    if len(coeffs) == 2:
+        return f"UPDATE games SET first_coeff='{coeff_1}', second_coeff='{coeff_2}' WHERE game_key='{game_key}';"
+    else:
+        draw = coeffs[0]
+        return f"UPDATE games SET first_coeff='{coeff_1}', second_coeff='{coeff_2}', draw_coeff='{draw}' WHERE game_key='{game_key}';"
+
+
+def get_prompt_view_team_size(team_name: str) -> str:
+    return f"SELECT teammates FROM teams WHERE team_name='{team_name}';"
+
+
 
 __all__ = [
     'Database',
@@ -151,5 +167,7 @@ __all__ = [
     'get_prompt_view_chat_id_by_nick',
     'get_prompt_view_nick_by_id',
     'get_prompt_view_user_team',
-    'get_prompt_view_users_sport_info'
+    'get_prompt_view_users_sport_info',
+    'get_prompt_update_coeffs',
+    'get_prompt_view_team_size'
 ]

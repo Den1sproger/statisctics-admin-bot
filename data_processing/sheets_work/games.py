@@ -9,6 +9,7 @@ from gspread.worksheet import Worksheet
 from ..config import Connect, FILEPATH_JSON
 from database import (Database,
                       SPORT_TYPES,
+                      PROMPT_VIEW_GAMES,
                       get_prompt_recorde_poole)
 from googlesheets import SPREADSHEET_ID, GAMES_SPREADSHEET_URL
 
@@ -67,6 +68,7 @@ class Games(Connect):
         formats = []
         count_gs = 2
         count = 1
+
         for data in list(self.games_data.values()):
             length = len(data['coeffs'])
 
@@ -310,3 +312,25 @@ class Games(Connect):
             worksheet=self.worksheet, cells_range=ranges,
             format={"backgroundColor": {color: 1.0}}
         )
+
+
+    def update_coeffs(self):
+        with open(FILEPATH_JSON, 'r', encoding='utf-8') as file:
+            games = json.load(file)
+
+        games_data = list(games.values())
+
+        updating_data = []
+        count = 2
+        for game in games_data:
+            length = len(game['coeffs'])
+            values = [[coeff] for coeff in game['coeffs'].values()]
+
+            updating_data.append({
+                'range': f'{self.CELLS_COLS["coefficients"]}{count}',
+                'values': values
+            })
+            count += length
+        
+        self.worksheet.batch_update(updating_data)
+        

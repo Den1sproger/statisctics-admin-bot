@@ -142,7 +142,8 @@ class Collection(Scrapper):
             return names
 
 
-    def __get_coeffs(self, game_id: str) -> list[float | None]:
+    def get_coeffs(self, game_id: str,
+                   sport_type: str) -> list[float | None]:
         # get the coefficients of teams for the one game
         params = {
             '_hash': 'ope',
@@ -166,8 +167,7 @@ class Collection(Scrapper):
 
         try: cf_2 = float(coefficients[-1]['value'].strip())
         except IndexError: cf_2 = ''
-
-        sport_type = self.full_data[game_id]['sport']
+        
         if self.IS_THERE_DRAW[sport_type]:
             try: cf_draw = float(coefficients[-3]['value'].strip())    # coefficient of draw
             except IndexError: cf_draw = ''
@@ -182,8 +182,9 @@ class Collection(Scrapper):
 
         for key, value in self.full_data.items():
             teams = self.__get_team_names(game_id=key)
-            coeffs = self.__get_coeffs(game_id=key)
-
+            coeffs = self.get_coeffs(game_id=key,
+                                     sport_type=self.full_data[key]['sport'])
+            print(coeffs)
             data = {}
 
             # coeffs for the teams
