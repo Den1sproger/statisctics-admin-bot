@@ -13,7 +13,8 @@ from database import (Database,
                       get_prompt_increase_positive_bets_poole,
                       get_prompt_increase_positive_bets_team,
                       get_prompt_increase_negative_bets_team,
-                      get_prompt_calculate_teams_roi)
+                      get_prompt_calculate_teams_roi,
+                      get_prompt_view_team_size)
 from ..sheets_work.games import Games
 from ..sheets_work.statistics import Stat_mass, Stat_sport_types
 from .base import Scrapper
@@ -34,22 +35,29 @@ class Calculate(Scrapper):
                             result: int,
                             win_coeff: float) -> list:
         teams_prompts = []
+        db = Database()
 
         for team_name, votes in teams_votes.items():
             team_votes = list(votes.values())
             positive_votes: int
             negative_votes = []
+            team_size = db.get_data_list(
+                get_prompt_view_team_size(team_name)
+            )[0]['teammates']
+            votes_sum = sum(team_votes)
 
+            if votes_sum == 1:
+                continue
+
+            if votes_sum < (team_size // 2):
+                continue
+             
             if 0 in team_votes:
                 tv = team_votes.copy()
                 tv.remove(0)
                 
                 if tv[0] == tv[1]:
                     continue
-                elif 0 in tv:
-                    tv.remove(0)
-                    if tv[0] == 1:
-                        continue
 
             for item, count in zip(team_votes, (1, 2, 3)):
                 if count == result:
