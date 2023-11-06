@@ -38,28 +38,26 @@ class Calculate(Scrapper):
         db = Database()
 
         for team_name, votes in teams_votes.items():
-            team_votes = list(votes.values())
-            positive_votes: int
-            negative_votes = []
+            current_team_votes = list(votes.values())
             team_size = db.get_data_list(
                 get_prompt_view_team_size(team_name)
             )[0]['teammates']
-            votes_sum = sum(team_votes)
+            votes_sum = sum(current_team_votes)
 
-            if votes_sum == 1:
+            if (votes_sum == 1) or (votes_sum <= (team_size / 2)):
                 continue
-
-            if votes_sum < (team_size // 2):
-                continue
-             
-            if 0 in team_votes:
-                tv = team_votes.copy()
+            
+            if 0 in current_team_votes:
+                tv = current_team_votes.copy()
                 tv.remove(0)
                 
                 if tv[0] == tv[1]:
                     continue
+            
+            positive_votes: int
+            negative_votes = []
 
-            for item, count in zip(team_votes, (1, 2, 3)):
+            for item, count in zip(current_team_votes, (1, 2, 3)):
                 if count == result:
                     positive_votes = item
                 else:
