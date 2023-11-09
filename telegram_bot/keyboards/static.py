@@ -20,3 +20,9 @@ confirm_finish_ikb = InlineKeyboardMarkup(
         [InlineKeyboardButton('Не завершать', callback_data='not_confirm')]
     ]
 )
+
+send_notification_ikb = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton('Отправить уведомление пользователям', callback_data='send_start_notification')]
+    ]
+)

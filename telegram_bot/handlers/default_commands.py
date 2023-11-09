@@ -2,6 +2,7 @@ import logging
 import json
 
 from aiogram import types
+from aiogram.utils.exceptions import ChatNotFound, CantInitiateConversation
 from aiogram.dispatcher.filters import Command, Text
 from data_processing import (Collection,
                              Games,
@@ -11,9 +12,12 @@ from database import (Database,
                       PROMPT_VIEW_GAMES,
                       PROMPT_DELETE_GAMES,
                       PROMPT_DELETE_ANSWERS,
-                      get_prompt_update_coeffs)
-from ..bot_config import dp, ADMIN
-from ..keyboards import get_ikb_gs_url, confirm_finish_ikb
+                      get_prompt_update_coeffs,
+                      PROMPT_VIEW_USERS_INFO)
+from ..bot_config import dp, ADMIN, users_bot
+from ..keyboards import (get_ikb_gs_url,
+                         confirm_finish_ikb,
+                         send_notification_ikb)
 
 
 
@@ -56,6 +60,7 @@ async def fill_table(message: types.Message) -> None:
 
 
 
+
 @dp.message_handler(Text(equals='🧹Очистить таблицу'), user_id=ADMIN)
 @dp.message_handler(Command('clear_table'), user_id=ADMIN)
 async def clear_table(message: types.Message) -> None:
@@ -81,6 +86,7 @@ async def clear_table(message: types.Message) -> None:
 
 
 
+
 @dp.message_handler(Text(equals='🏀🏐Утвердить матчи'), user_id=ADMIN)
 @dp.message_handler(Command('approve_games'), user_id=ADMIN)
 async def approve_games(message: types.Message) -> None:
@@ -95,8 +101,28 @@ async def approve_games(message: types.Message) -> None:
         return
     
     await message.answer(
-        f"Данные утверждены✅\nДля корректной работы ничего не меняйте в таблице"
+        text=f"Данные утверждены✅\nДля корректной работы ничего не меняйте в таблице",
+        reply_markup=send_notification_ikb
     )
+
+
+@dp.callback_query_handler(lambda callback: callback.data == 'send_start_notification')
+async def send_start_notification(callback: types.CallbackQuery) -> None:
+    db = Database()
+    
+    users = db.get_data_list(PROMPT_VIEW_USERS_INFO)
+
+    msg_text='❗️Доступно участие в турнире\nВ разделе "Текущие турниры" выберите свой турнир'
+    for user in users:
+        try:
+            await users_bot.send_message(chat_id=user['chat_id'], text=msg_text)
+        except (ChatNotFound, CantInitiateConversation):
+            await callback.message.answer(
+                f'@{user["username"]} не создал чат с ботом'
+            )
+
+    await callback.message.answer('✅Уведомления отправлены пользователям')
+
 
 
 
@@ -130,6 +156,7 @@ async def full_calculate(message: types.Message) -> None:
         return
     
     await message.answer('✅✅✅Расчет успешно произведен, статистика обновлена')
+
 
 
 
@@ -179,6 +206,7 @@ async def update_coeffs(message: types.Message) -> None:
         return
 
     await message.answer('✅Коэффициенты обновлены')
+
 
 
 

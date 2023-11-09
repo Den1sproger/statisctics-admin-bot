@@ -3,4 +3,4 @@ __pycache__/
 py_log.log
 test.py
 games.json
-venv/*
+venv/
