@@ -43,7 +43,7 @@ pip3 install -r requirements.txt
 How to create a MySQL database, see [HERE](https://github.com/Den1sproger/bets_statistic_bot "Statistics bot repository")
 
 ### Create Telegram Bot
-Go to [BotFather](https://t.me/BotFather "Bot Father") and create bot. Save API TOKEN to environment variable under the name **STATISTICS_ADMIN_TOKEN**
+Go to [BotFather](https://t.me/BotFather "Bot Father") and create bot. Save API TOKEN to environment variable under the name **STATISTICS_ADMIN_TOKEN**. Also you should write Telegram chat id of admin to environment variable **ADMIN**.
 
 ### Create GoogleSheets
 How to create tables in googlesheets and connect with to them, see [HERE](https://github.com/Den1sproger/bets_statistic_bot "Statistics bot repository")
