@@ -9,6 +9,7 @@ PROMPT_DELETE_GAMES = "TRUNCATE games;"
 PROMPT_DELETE_ANSWERS = "TRUNCATE answers;"
 PROMPT_RESET_CURRENT_STATISTICS = "UPDATE sports_users_roi SET positive_bets=0, negative_bets=0, roi=0;"
 PROMPT_VIEW_USERS_INFO = "SELECT * FROM users;"
+PROMPT_VIEW_USERS_WITHOUT_POOLE = "SELECT * FROM users WHERE username<>'Poole';"
 PROMPT_INCREASE_NEGATIVE_BETS_POOLE = "UPDATE users SET negative_bets=negative_bets+1 WHERE username='poole';"
 PROMPT_CALC_POOLE_ROI = "UPDATE users SET roi=(coeff_sum - positive_bets - negative_bets) / (positive_bets + negative_bets) * 100 WHERE username='poole';"
 
@@ -151,6 +152,7 @@ __all__ = [
     'PROMPT_VIEW_USERS_INFO',
     'PROMPT_INCREASE_NEGATIVE_BETS_POOLE',
     'PROMPT_CALC_POOLE_ROI',
+    'PROMPT_VIEW_USERS_WITHOUT_POOLE',
     'get_prompts_increase_positive_bets',
     'get_prompts_increase_negative_bets',
     'get_prompt_increase_positive_bets_poole',

@@ -13,7 +13,7 @@ from database import (Database,
                       PROMPT_DELETE_GAMES,
                       PROMPT_DELETE_ANSWERS,
                       get_prompt_update_coeffs,
-                      PROMPT_VIEW_USERS_INFO)
+                      PROMPT_VIEW_USERS_WITHOUT_POOLE)
 from ..bot_config import dp, ADMIN, users_bot
 from ..keyboards import (get_ikb_gs_url,
                          confirm_finish_ikb,
@@ -109,10 +109,9 @@ async def approve_games(message: types.Message) -> None:
 @dp.callback_query_handler(lambda callback: callback.data == 'send_start_notification')
 async def send_start_notification(callback: types.CallbackQuery) -> None:
     db = Database()
-    
-    users = db.get_data_list(PROMPT_VIEW_USERS_INFO)
-
+    users = db.get_data_list(PROMPT_VIEW_USERS_WITHOUT_POOLE)
     msg_text='❗️Доступно участие в турнире\nВ разделе "Текущие турниры" выберите свой турнир'
+
     for user in users:
         try:
             await users_bot.send_message(chat_id=user['chat_id'], text=msg_text)
