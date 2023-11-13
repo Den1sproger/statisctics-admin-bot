@@ -110,7 +110,7 @@ async def approve_games(message: types.Message) -> None:
 async def send_start_notification(callback: types.CallbackQuery) -> None:
     db = Database()
     users = db.get_data_list(PROMPT_VIEW_USERS_WITHOUT_POOLE)
-    msg_text='❗️Доступно участие в турнире\nВ разделе "Текущие турниры" выберите свой турнир'
+    msg_text='❗️ВНИМАНИЕ❗️\nДоступны новые пари и обновлен стат.\n\n🖇 Примите участие. Чем больше пул, тем выше результат.'
 
     for user in users:
         try:
